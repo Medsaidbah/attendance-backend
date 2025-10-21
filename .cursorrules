@@ -1,0 +1,6 @@
+- Implement: /auth/login (stub), /geofence (GeoJSON upsert), /time-windows (replace-all), /presence/check (server rule).
+- Use PostGIS for point-in-polygon with spatial indexes.
+- Separate events (facts) from attendances (decisions).
+- English in code/comments; French for user strings.
+- No external backends (no Supabase/Firebase).
+- Keep functions short with docstrings. Minimal, runnable code.
