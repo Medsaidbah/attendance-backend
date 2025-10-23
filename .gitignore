@@ -1,0 +1,10 @@
+﻿__pycache__/
+*.pyc
+.env
+.venv/
+.vscode/
+.idea/
+dist/
+build/
+coverage/
+students.csv
