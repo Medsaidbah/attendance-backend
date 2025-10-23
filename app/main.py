@@ -21,9 +21,11 @@ from events.schemas import DailyStatsResponse
 from auth import authenticate_user, create_access_token, get_current_user
 from settings import settings
 from geo import (
-    check_point_in_geofence, get_active_geofence, 
+    check_point_in_geofence, get_active_geofence_for_point,
     get_active_time_window, geojson_to_postgis_polygon
 )
+
+
 
 
 app = FastAPI(
@@ -236,7 +238,7 @@ async def check_presence(request: PresenceCheckRequest, db: Session = Depends(ge
         time_window_id, time_window_name = time_window
         
         # Get active geofence
-        geofence = get_active_geofence(db)
+        geofence = get_active_geofence_for_point(db, request.lat, request.lon)
         if not geofence:
             return PresenceCheckResponse(
                 status=StatusEnum.absent,
