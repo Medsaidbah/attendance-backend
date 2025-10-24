@@ -1,4 +1,8 @@
 """FastAPI application with attendance endpoints."""
+from metrics import router as metrics_router, PRESENCE_REQUESTS, PRESENCE_SUCCESSES
+from live import router as live_router
+from security_hmac import hmac_guard
+
 from fastapi import FastAPI, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -33,6 +37,9 @@ app = FastAPI(
     description="API de gestion de présence avec géolocalisation",
     version="1.0.0"
 )
+
+app.include_router(metrics_router)
+app.include_router(live_router)
 
 # Include routers
 app.include_router(students_router)
@@ -213,8 +220,22 @@ async def get_time_windows(db: Session = Depends(get_db)):
     ]
 
 # Presence check endpoint
+try:
+    PRESENCE_REQUESTS.inc()
+except Exception:
+    pass
+try:
+    PRESENCE_SUCCESSES.inc()
+except Exception:
+    pass
+
 @app.post("/presence/check", response_model=PresenceCheckResponse)
-async def check_presence(request: PresenceCheckRequest, db: Session = Depends(get_db)):
+async def check_presence(
+    request: PresenceCheckRequest,
+    db: Session = Depends(get_db),
+    _sec: bool = Depends(hmac_guard)
+):
+
     """Check student presence based on location and time window."""
     try:
         # Get student ID
