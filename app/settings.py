@@ -1,4 +1,5 @@
 """Application settings and configuration (Pydantic v2)."""
+
 from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
@@ -37,11 +38,11 @@ class Settings(BaseSettings):
 
     # Pydantic v2 settings
     model_config = SettingsConfigDict(
-        env_file=".env",               # also reads OS env from Docker Compose
+        env_file=".env",  # also reads OS env from Docker Compose
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
-        env_prefix="",                 # no prefix
+        env_prefix="",  # no prefix
     )
 
     # ---- Backwards-compat properties (UPPERCASE) ----
