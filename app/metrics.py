@@ -8,6 +8,7 @@ router = APIRouter()
 PRESENCE_REQUESTS = Counter("presence_requests_total", "Presence requests received")
 PRESENCE_SUCCESSES = Counter("presence_success_total", "Successful presence checks")
 
+
 @router.get("/metrics")
 def metrics():
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)

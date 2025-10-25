@@ -1,4 +1,5 @@
 """JWT authentication utilities."""
+
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
@@ -31,17 +32,23 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.jwt_access_token_expire_minutes)
-    
+        expire = datetime.utcnow() + timedelta(
+            minutes=settings.jwt_access_token_expire_minutes
+        )
+
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm
+    )
     return encoded_jwt
 
 
 def verify_token(token: str) -> Optional[dict]:
     """Verify and decode a JWT token."""
     try:
-        payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+        payload = jwt.decode(
+            token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
+        )
         return payload
     except JWTError:
         return None
@@ -49,30 +56,28 @@ def verify_token(token: str) -> Optional[dict]:
 
 def authenticate_user(username: str, password: str) -> bool:
     """Authenticate user against admin credentials."""
-    return (username == settings.admin_user and 
-            password == settings.admin_pass)
+    return username == settings.admin_user and password == settings.admin_pass
 
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> dict:
     """Get current authenticated user from JWT token."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    
+
     try:
         payload = verify_token(credentials.credentials)
         if payload is None:
             raise credentials_exception
-        
+
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-            
+
         return {"username": username}
     except JWTError:
         raise credentials_exception
-
-
-

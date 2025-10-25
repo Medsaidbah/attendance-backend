@@ -1,4 +1,5 @@
 """FastAPI application with attendance endpoints."""
+
 from fastapi import FastAPI, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -12,10 +13,14 @@ from security_hmac import hmac_guard
 
 from db import get_db
 from schemas import (
-    GeofenceCreate, GeofenceResponse,
-    TimeWindowCreate, TimeWindowResponse,
-    PresenceCheckRequest, PresenceCheckResponse,
-    LoginRequest, LoginResponse,
+    GeofenceCreate,
+    GeofenceResponse,
+    TimeWindowCreate,
+    TimeWindowResponse,
+    PresenceCheckRequest,
+    PresenceCheckResponse,
+    LoginRequest,
+    LoginResponse,
     StatusEnum,
 )
 from students.routes import router as students_router
@@ -24,8 +29,10 @@ from events.service import EventService
 from events.schemas import DailyStatsResponse
 from auth import authenticate_user, create_access_token, get_current_user
 from geo import (
-    check_point_in_geofence, get_active_geofence_for_point,
-    get_active_time_window, geojson_to_postgis_polygon,
+    check_point_in_geofence,
+    get_active_geofence_for_point,
+    get_active_time_window,
+    geojson_to_postgis_polygon,
 )
 
 app = FastAPI(
@@ -36,11 +43,12 @@ app = FastAPI(
 
 # Observability & live stream
 app.include_router(metrics_router)  # exposes GET /metrics
-app.include_router(live_router)     # exposes GET /stream/live
+app.include_router(live_router)  # exposes GET /stream/live
 
 # Functional routers
 app.include_router(students_router)
 app.include_router(events_router)
+
 
 # --------------------
 # Auth
@@ -56,6 +64,7 @@ async def login(request: LoginRequest):
         )
     access_token = create_access_token(data={"sub": request.username})
     return LoginResponse(access_token=access_token, token_type="bearer")
+
 
 # --------------------
 # Geofences
@@ -85,7 +94,11 @@ async def upsert_geofence(
                      WHERE name = :name
                     """
                 ),
-                {"polygon": wkt_polygon, "margin_m": geofence.margin_m, "name": geofence.name},
+                {
+                    "polygon": wkt_polygon,
+                    "margin_m": geofence.margin_m,
+                    "name": geofence.name,
+                },
             )
             geofence_id = existing.id
         else:
@@ -97,7 +110,11 @@ async def upsert_geofence(
                     RETURNING id
                     """
                 ),
-                {"name": geofence.name, "polygon": wkt_polygon, "margin_m": geofence.margin_m},
+                {
+                    "name": geofence.name,
+                    "polygon": wkt_polygon,
+                    "margin_m": geofence.margin_m,
+                },
             )
             geofence_id = result.fetchone().id
 
@@ -126,7 +143,10 @@ async def upsert_geofence(
 
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail=f"Erreur lors de la sauvegarde: {str(e)}")
+        raise HTTPException(
+            status_code=400, detail=f"Erreur lors de la sauvegarde: {str(e)}"
+        )
+
 
 @app.get("/geofence", response_model=List[GeofenceResponse])
 async def get_geofences(db: Session = Depends(get_db)):
@@ -154,6 +174,7 @@ async def get_geofences(db: Session = Depends(get_db)):
         )
         for r in rows
     ]
+
 
 # --------------------
 # Time windows
@@ -204,7 +225,10 @@ async def replace_time_windows(
 
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail=f"Erreur lors de la sauvegarde: {str(e)}")
+        raise HTTPException(
+            status_code=400, detail=f"Erreur lors de la sauvegarde: {str(e)}"
+        )
+
 
 @app.get("/time-windows", response_model=List[TimeWindowResponse])
 async def get_time_windows(db: Session = Depends(get_db)):
@@ -231,6 +255,7 @@ async def get_time_windows(db: Session = Depends(get_db)):
         )
         for r in rows
     ]
+
 
 # --------------------
 # Presence check (HMAC-protected for mobile)
@@ -261,13 +286,17 @@ async def check_presence(
         # time window (server time)
         time_window = get_active_time_window(db)
         if not time_window:
-            return PresenceCheckResponse(status=StatusEnum.absent, message="Aucune fenêtre horaire active")
+            return PresenceCheckResponse(
+                status=StatusEnum.absent, message="Aucune fenêtre horaire active"
+            )
         time_window_id, time_window_name = time_window
 
         # geofence (nearest/containing)
         geofence = get_active_geofence_for_point(db, request.lat, request.lon)
         if not geofence:
-            return PresenceCheckResponse(status=StatusEnum.absent, message="Aucune géofence active")
+            return PresenceCheckResponse(
+                status=StatusEnum.absent, message="Aucune géofence active"
+            )
         geofence_id, geofence_name = geofence
 
         # inside?
@@ -312,7 +341,13 @@ async def check_presence(
                 VALUES (:sid, :eid, :twid, :status, :gid)
                 """
             ),
-            {"sid": student_id, "eid": event_id, "twid": time_window_id, "status": status_val.value, "gid": geofence_id},
+            {
+                "sid": student_id,
+                "eid": event_id,
+                "twid": time_window_id,
+                "status": status_val.value,
+                "gid": geofence_id,
+            },
         )
 
         db.commit()
@@ -334,7 +369,10 @@ async def check_presence(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Erreur lors de la vérification: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Erreur lors de la vérification: {str(e)}"
+        )
+
 
 # --------------------
 # Stats
@@ -347,12 +385,16 @@ async def get_daily_stats(
 ):
     """Récupérer les statistiques quotidiennes pour une date donnée."""
     from datetime import datetime
+
     try:
         target_date = datetime.strptime(date, "%Y-%m-%d").date()
     except ValueError:
-        raise HTTPException(status_code=400, detail="Format de date invalide. Utilisez YYYY-MM-DD")
+        raise HTTPException(
+            status_code=400, detail="Format de date invalide. Utilisez YYYY-MM-DD"
+        )
     service = EventService(db)
     return service.get_daily_stats(target_date)
+
 
 # --------------------
 # Root
@@ -361,6 +403,8 @@ async def get_daily_stats(
 async def root():
     return {"message": "API de gestion de présence", "version": "1.0.0"}
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

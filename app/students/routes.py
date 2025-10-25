@@ -1,4 +1,5 @@
 """FastAPI routes for students."""
+
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
@@ -22,7 +23,9 @@ router = APIRouter(prefix="/students", tags=["students"])
 
 @router.get("", response_model=StudentListResponse)
 async def get_students(
-    q: Optional[str] = Query(None, description="Recherche par matricule, nom ou prénom"),
+    q: Optional[str] = Query(
+        None, description="Recherche par matricule, nom ou prénom"
+    ),
     limit: int = Query(50, ge=1, le=100, description="Nombre d'éléments par page"),
     offset: int = Query(0, ge=0, description="Décalage pour la pagination"),
     db: Session = Depends(get_db),
@@ -31,7 +34,9 @@ async def get_students(
     service = StudentService(db)
     students, total = service.get_students(q=q, limit=limit, offset=offset)
 
-    return StudentListResponse(students=students, total=total, limit=limit, offset=offset)
+    return StudentListResponse(
+        students=students, total=total, limit=limit, offset=offset
+    )
 
 
 @router.post("", response_model=StudentResponse, status_code=201)
@@ -86,7 +91,9 @@ async def delete_student(
 
 @router.post("/import", response_model=StudentImportResponse)
 async def import_students(
-    file: UploadFile = File(..., description="Fichier CSV avec colonnes: matricule,nom,prenom"),
+    file: UploadFile = File(
+        ..., description="Fichier CSV avec colonnes: matricule,nom,prenom"
+    ),
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):

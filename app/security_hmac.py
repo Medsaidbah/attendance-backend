@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-import hmac, hashlib, time
+import hmac
+import hashlib
+import time
 from fastapi import Header, HTTPException, Request
 from settings import settings  # your existing pydantic-settings
 
 MAX_SKEW = 120  # seconds
+
 
 async def hmac_guard(
     request: Request,
@@ -18,7 +21,7 @@ async def hmac_guard(
         raise HTTPException(status_code=401, detail="invalid api key")
     try:
         ts = int(x_ts)
-    except:
+    except Exception:
         raise HTTPException(status_code=401, detail="bad timestamp")
     if abs(int(time.time()) - ts) > MAX_SKEW:
         raise HTTPException(status_code=401, detail="stale request")

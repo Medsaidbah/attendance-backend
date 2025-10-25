@@ -1,4 +1,5 @@
 """Geospatial utilities for PostGIS operations (geography)."""
+
 from typing import Optional, Tuple
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -12,7 +13,9 @@ def create_point_geography(lat: float, lon: float) -> str:
     return f"POINT({lon} {lat})"
 
 
-def check_point_in_geofence(db: Session, lat: float, lon: float, geofence_id: int) -> bool:
+def check_point_in_geofence(
+    db: Session, lat: float, lon: float, geofence_id: int
+) -> bool:
     """
     Check if a point is inside (or within margin_m meters of) a geofence.
 
@@ -55,7 +58,9 @@ def get_active_geofence(db: Session) -> Optional[Tuple[int, str]]:
     return (row.id, row.name) if row else None
 
 
-def get_active_geofence_for_point(db: Session, lat: float, lon: float) -> Optional[Tuple[int, str]]:
+def get_active_geofence_for_point(
+    db: Session, lat: float, lon: float
+) -> Optional[Tuple[int, str]]:
     """
     Pick the active geofence that contains the point (or the nearest if none contains it).
 
@@ -126,7 +131,9 @@ def geojson_to_postgis_polygon(geojson: dict) -> str:
 
     ring = geojson["coordinates"][0]  # exterior ring
     if len(ring) < 4:
-        raise ValueError("Polygon ring must have at least 4 coordinates (including closure)")
+        raise ValueError(
+            "Polygon ring must have at least 4 coordinates (including closure)"
+        )
 
     # close ring if not closed
     if ring[0] != ring[-1]:
