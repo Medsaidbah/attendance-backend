@@ -293,7 +293,9 @@ class StudentService:
                 status_code=400, detail=f"Erreur lors de l'import: {str(e)}"
             )
 
-    async def import_students_csv(self, upload_file: UploadFile) -> StudentImportResponse:
+    async def import_students_csv(
+        self, upload_file: UploadFile
+    ) -> StudentImportResponse:
         """
         Async CSV import used by tests.
         - Must raise "Le fichier doit être un CSV" for bad extension
