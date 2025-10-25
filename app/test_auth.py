@@ -11,19 +11,19 @@ class TestAuthentication:
 
     def test_authenticate_user_valid(self):
         """Test valid user authentication."""
-        assert authenticate_user(settings.admin_user, settings.admin_pass) == True
+        assert authenticate_user(settings.admin_user, settings.admin_pass)
 
     def test_authenticate_user_invalid_username(self):
         """Test invalid username authentication."""
-        assert authenticate_user("wrong_user", settings.admin_pass) == False
+        assert not authenticate_user("wrong_user", settings.admin_pass)
 
     def test_authenticate_user_invalid_password(self):
         """Test invalid password authentication."""
-        assert authenticate_user(settings.admin_user, "wrong_pass") == False
+        assert not authenticate_user(settings.admin_user, "wrong_pass")
 
     def test_authenticate_user_both_invalid(self):
         """Test both username and password invalid."""
-        assert authenticate_user("wrong_user", "wrong_pass") == False
+        assert not authenticate_user("wrong_user", "wrong_pass")
 
     def test_create_access_token(self):
         """Test JWT token creation."""
