@@ -6,7 +6,7 @@ import io
 from unittest.mock import Mock, AsyncMock
 from fastapi import UploadFile
 
-from schemas import StudentImportRow
+from students.schemas import StudentImportRow
 from .service import StudentService
 
 

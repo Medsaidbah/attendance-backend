@@ -2,7 +2,7 @@
 
 from unittest.mock import Mock
 
-from schemas import EventStatus, EventMethod, EventCreate, DailyStatsResponse
+from events.schemas import EventStatus, EventMethod, EventCreate, DailyStatsResponse
 from .service import EventService
 
 

@@ -21,7 +21,7 @@ async def hmac_guard(
         raise HTTPException(status_code=401, detail="invalid api key")
     try:
         ts = int(x_ts)
-    except:
+    except Exception:
         raise HTTPException(status_code=401, detail="bad timestamp")
     if abs(int(time.time()) - ts) > MAX_SKEW:
         raise HTTPException(status_code=401, detail="stale request")
